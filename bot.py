@@ -492,8 +492,8 @@ class UtilityCog(commands.Cog):
         self.polls = {}
         self.reminders = []
 
-    @bot.command(name="help")
-    async def help_command(ctx, category=None):
+    @commands.command(name="help")
+    async def help_command(self, ctx, category=None):
         """Display bot commands and information"""
         
         # Define command categories with emojis
