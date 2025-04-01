@@ -1,3 +1,5 @@
 discord
 dotenv
 PyNaCl
+youtube_dl
+requests
