@@ -669,16 +669,15 @@ class UtilityCog(commands.Cog):
         else:
             embed.set_image(url=member.default_avatar.url)
             await ctx.send(embed=embed)
-    
-# --- Fun Commands ---
+
 class FunCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
-    @commands.command(name="meme")
-    async def meme(self, ctx):
-        """Fetches a random meme from Reddit"""
-        subreddits = ["memes", "dankmemes", "wholesomememes"]
+        
+    @commands.command(name="stonks")
+    async def stonks(self, ctx):
+        """Fetches a random meme from r/wallstreetbets"""
+        subreddits = ["wallstreetbets", "investingmemes", "financememes", "algotrading", "options"]
         subreddit = random.choice(subreddits)
         
         try:
@@ -690,7 +689,7 @@ class FunCog(commands.Cog):
                     if not post["data"]["is_self"] and not post["data"]["over_18"]]
             
             if not posts:
-                return await ctx.send("Couldn't find any memes right now. Try again later.")
+                return await ctx.send("No tendies for you today. Try again when market opens. 📉")
             
             random_post = random.choice(posts)
             post_data = random_post["data"]
@@ -698,38 +697,210 @@ class FunCog(commands.Cog):
             embed = discord.Embed(
                 title=post_data["title"],
                 url=f"https://reddit.com{post_data['permalink']}",
-                color=discord.Color.orange()
+                color=discord.Color.green() if random.random() > 0.5 else discord.Color.red()
             )
             
             embed.set_image(url=post_data["url"])
-            embed.set_footer(text=f"👍 {post_data['ups']} | 💬 {post_data['num_comments']} | From r/{subreddit}")
+            embed.set_footer(text=f"💎👐 {post_data['ups']} | 🦍 {post_data['num_comments']} | From r/{subreddit}")
             
             await ctx.send(embed=embed)
             
         except Exception as e:
-            await ctx.send("Failed to fetch a meme. Try again later.")
-            logger.error(f"Error in meme command: {e}")
+            await ctx.send("Error getting stonk memes. The SEC must be watching. 👀")
+            logger.error(f"Error in stonks command: {e}")
     
-    @commands.command(name="quote")
-    async def quote(self, ctx):
-        """Fetches a random inspirational quote"""
-        try:
-            response = requests.get("https://api.quotable.io/random")
-            data = response.json()
-            
-            embed = discord.Embed(
-                title="📜 Inspirational Quote",
-                description=f"\"{data['content']}\"",
-                color=discord.Color.teal()
-            )
-            
-            embed.set_footer(text=f"- {data['author']}")
-            
-            await ctx.send(embed=embed)
-            
-        except Exception as e:
-            await ctx.send("Failed to fetch a quote. Try again later.")
-            logger.error(f"Error in quote command: {e}")
+    @commands.command(name="wsb")
+    async def wsb_quote(self, ctx):
+        """Generates a random Wall Street Bets style quote"""
+        phrases = [
+            "Sir, this is a Wendy's.",
+            "Apes together strong! 🦍",
+            "Buy high, sell low. This is the way.",
+            "It's not a loss if you don't sell! 💎👐",
+            "Stonks only go up! 📈",
+            "My wife's boyfriend bought more GME today.",
+            "I'm not a cat, I just like the stock.",
+            "Time in the market beats timing the market, unless you're a degenerate.",
+            "This is definitely financial advice. Sue me.",
+            "If he's still in, I'm still in!",
+            "YOLO'd my life savings. What could go wrong?",
+            "Dump it. He bought? Pump it.",
+            "I can feel it in my plums. Market's going to rally.",
+            "Technical analysis is just astrology for traders.",
+            "Theta gang sends their regards.",
+            "My DD: trust me bro.",
+            "Position or ban!",
+            "I'm leveraged to the personal risk tolerance."
+        ]
+        
+        embed = discord.Embed(
+            title="💸 WSB Wisdom",
+            description=f"\"{random.choice(phrases)}\"",
+            color=discord.Color.gold()
+        )
+        
+        embed.set_footer(text="Not financial advice. Or is it?")
+        
+        await ctx.send(embed=embed)
+    
+    @commands.command(name="ticker")
+    async def ticker_info(self, ctx, symbol: str = None):
+        """Gets basic info about a stock ticker"""
+        if not symbol:
+            symbols = ["GME", "TSLA", "AAPL", "MSFT", "PLTR", "SPY", "NVDA", "AMD", "RBLX", "AMC"]
+            symbol = random.choice(symbols)
+        
+        symbol = symbol.upper().strip()
+        
+        # Mock data since we're not using a real API
+        current_price = round(random.uniform(10, 500), 2)
+        change_pct = round(random.uniform(-15, 15), 2)
+        volume = random.randint(100000, 10000000)
+        
+        direction = "📈" if change_pct > 0 else "📉"
+        color = discord.Color.green() if change_pct > 0 else discord.Color.red()
+        
+        embed = discord.Embed(
+            title=f"${symbol} {direction}",
+            description=f"**Current Price:** ${current_price}\n**Change:** {change_pct}%\n**Volume:** {volume:,}",
+            color=color
+        )
+        
+        # Generate a random comment based on the price movement
+        if change_pct > 5:
+            comment = random.choice([
+                "To the moon! 🚀🚀🚀",
+                "Tendies incoming!",
+                "HODL! 💎👐",
+                "This is the way."
+            ])
+        elif change_pct > 0:
+            comment = random.choice([
+                "Bullish.",
+                "LFG!",
+                "Still undervalued IMO.",
+                "Position: Long. Hotel: Trivago."
+            ])
+        elif change_pct > -5:
+            comment = random.choice([
+                "Buy the dip!",
+                "Discount prices!",
+                "Not a loss if you don't sell.",
+                "Transitory."
+            ])
+        else:
+            comment = random.choice([
+                "GUH!",
+                "It's just a short ladder attack!",
+                "I'm never going to financially recover from this.",
+                "Wendy's application submitted."
+            ])
+        
+        embed.set_footer(text=comment)
+        
+        await ctx.send(embed=embed)
+    
+    @commands.command(name="yolo")
+    async def yolo(self, ctx):
+        """Simulates a YOLO options trade"""
+        tickers = ["SPY", "TSLA", "AAPL", "NVDA", "MSFT", "AMZN", "PLTR", "GME", "AMC", "BB"]
+        ticker = random.choice(tickers)
+        
+        # Generate expiration date (always a Friday)
+        today = datetime.datetime.now()
+        days_until_friday = (4 - today.weekday()) % 7 + 7 * random.randint(0, 3)
+        expiry = today + datetime.timedelta(days=days_until_friday)
+        expiry_str = expiry.strftime("%m/%d")
+        
+        is_call = random.random() > 0.4  # Slightly biased toward calls
+        direction = "Call" if is_call else "Put"
+        
+        base_price = random.randint(50, 500)
+        strike = round(base_price * (random.uniform(0.7, 1.3)), 0)
+        
+        investment = random.randint(1000, 50000)
+        contracts = round(investment / (random.uniform(1, 10) * 100))
+        
+        result_multiplier = random.uniform(-1, 3)  # Biased toward loss but with occasional big wins
+        result = round(investment * result_multiplier)
+        
+        color = discord.Color.green() if result > 0 else discord.Color.red()
+        
+        embed = discord.Embed(
+            title=f"YOLO: ${ticker} {strike} {expiry_str} {direction}s",
+            color=color
+        )
+        
+        embed.add_field(name="Investment", value=f"${investment:,}", inline=True)
+        embed.add_field(name="Contracts", value=f"{contracts}", inline=True)
+        embed.add_field(name="Result", value=f"${result:,} ({round(result_multiplier*100)}%)", inline=True)
+        
+        if result > investment * 2:
+            outcome = random.choice([
+                "Congrats, and fuck you! 🎉",
+                "This is the confirmation bias I needed.",
+                "Time to buy a Lambo! 🏎️",
+                "Screenshot or it didn't happen."
+            ])
+        elif result > 0:
+            outcome = random.choice([
+                "Decent gains. Now do it again.",
+                "Not bad for a smooth brain.",
+                "First one's free.",
+                "Now YOLO it all on 0DTE SPY puts."
+            ])
+        elif result > -investment:
+            outcome = random.choice([
+                "Sir, this is a casino.",
+                "At least you didn't lose everything.",
+                "Have you tried turning it off and on again?",
+                "Don't $ROPE, there's always next paycheck."
+            ])
+        else:
+            outcome = random.choice([
+                "Position: devastated. Portfolio: obliterated.",
+                "At least you have Reddit karma.",
+                "Wendy's is hiring.",
+                "Loss porn incoming!"
+            ])
+        
+        embed.set_footer(text=outcome)
+        
+        await ctx.send(embed=embed)
+    
+    @commands.command(name="jpow")
+    async def jpow(self, ctx):
+        """Random Jerome Powell quote with money printer status"""
+        quotes = [
+            "The Fed is committed to using its full range of tools to support the economy.",
+            "Inflation is transitory.",
+            "The economy is in a good place.",
+            "We're not even thinking about thinking about raising rates.",
+            "The economic outlook is highly uncertain.",
+            "The path forward for the economy is extraordinarily uncertain.",
+            "The Fed will do whatever it takes.",
+            "The risks to the outlook are significant.",
+            "We're strongly committed to our 2 percent inflation objective.",
+            "The economy does not work for all Americans."
+        ]
+        
+        printer_status = random.choice([
+            "BRRRRRRRRR! 💵💵💵",
+            "Printer jam. Technician called.",
+            "Low on ink. Scheduling QE.",
+            "Warming up... standby for liquidity.",
+            "Overheating! Rate hike imminent."
+        ])
+        
+        embed = discord.Embed(
+            title="💸 JPow Speaks",
+            description=f"\"{random.choice(quotes)}\"",
+            color=discord.Color.dark_green()
+        )
+        
+        embed.set_footer(text=f"Money Printer Status: {printer_status}")
+        
+        await ctx.send(embed=embed)
 
 async def setup_bot():
     await bot.add_cog(MusicCog(bot))
