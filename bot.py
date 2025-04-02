@@ -366,103 +366,164 @@ class UtilityCog(commands.Cog):
         self.bot = bot
         self.polls = {}
         self.reminders = []
+        bot.remove_command("help")
 
     @commands.command(name="help")
     async def help_command(self, ctx, category=None):
-        """Display bot commands and information"""
-        
-        # Define command categories with emojis
+        """Display a detailed help menu with bot commands and usage instructions."""
+        # Define command categories with detailed descriptions, command usage, and examples
         categories = {
             "music": {
                 "emoji": "🎵",
                 "title": "Music Commands",
-                "description": "Commands for playing music in voice channels",
+                "description": (
+                    "Control the music player with commands that let you join voice channels, "
+                    "play songs from YouTube, manage the queue, and more. Enjoy your favorite tunes!"
+                ),
                 "commands": {
-                    "join": "Join your voice channel",
-                    "play <song>": "Play a song from YouTube",
-                    "queue": "View the current music queue",
-                    "skip": "Skip the current song",
-                    "stop": "Stop playback and clear the queue",
-                    "leave": "Leave the voice channel"
+                    "join": {
+                        "description": "Join your current voice channel.",
+                        "usage": "!join"
+                    },
+                    "play <song>": {
+                        "description": "Search and play a song from YouTube. Accepts a URL or a search query.",
+                        "usage": "!play Despacito"
+                    },
+                    "queue": {
+                        "description": "Display the current music queue with upcoming songs.",
+                        "usage": "!queue"
+                    },
+                    "skip": {
+                        "description": "Skip the currently playing song.",
+                        "usage": "!skip"
+                    },
+                    "stop": {
+                        "description": "Stop playback and clear the current queue.",
+                        "usage": "!stop"
+                    },
+                    "leave": {
+                        "description": "Disconnect the bot from the voice channel.",
+                        "usage": "!leave"
+                    }
                 }
             },
             "moderation": {
                 "emoji": "🛡️",
                 "title": "Moderation Commands",
-                "description": "Commands for server moderation",
+                "description": (
+                    "Manage your server efficiently with commands to delete messages, post announcements, "
+                    "and more. These commands are typically restricted to moderators or administrators."
+                ),
                 "commands": {
-                    "clear <amount>": "Clear messages",
-                    "announcement <channel> <message>": "Make an announcement"
+                    "clear <amount>": {
+                        "description": "Delete a specified number of messages from the channel.",
+                        "usage": "!clear 10"
+                    },
+                    "announcement <channel> <message>": {
+                        "description": "Post an announcement in the designated channel.",
+                        "usage": "!announcement #general Important update!"
+                    }
                 }
             },
             "utility": {
                 "emoji": "🔧",
                 "title": "Utility Commands",
-                "description": "Useful server utilities",
+                "description": (
+                    "Useful commands that provide information about the server and its users. "
+                    "Easily view server stats, user details, and even create polls."
+                ),
                 "commands": {
-                    "poll <question> <option1> <option2> ...": "Create a poll",
-                    "serverinfo": "Display server information",
-                    "userinfo [member]": "Display user information",
-                    "avatar [member]": "Display a user's avatar",
+                    "poll <question> <option1> <option2> ...": {
+                        "description": "Create a poll for users to vote on with reaction emojis.",
+                        "usage": "!poll 'Your question?' 'Option 1' 'Option 2'"
+                    },
+                    "serverinfo": {
+                        "description": "Display detailed information about the server.",
+                        "usage": "!serverinfo"
+                    },
+                    "userinfo [member]": {
+                        "description": (
+                            "Show detailed information about a user. "
+                            "If no member is specified, it displays your own info."
+                        ),
+                        "usage": "!userinfo @username"
+                    },
+                    "avatar [member]": {
+                        "description": (
+                            "Display the avatar of a user. "
+                            "If no member is mentioned, your avatar is shown."
+                        ),
+                        "usage": "!avatar @username"
+                    }
                 }
             },
             "fun": {
                 "emoji": "🎮",
                 "title": "Fun Commands",
-                "description": "Commands for fun and entertainment",
+                "description": (
+                    "Enjoy entertaining commands for memes, quotes, and playful interactions. "
+                    "Get your daily dose of humor with stock memes, financial quotes, and simulated trades!"
+                ),
                 "commands": {
-                    "meme": "Get a random meme",
-                    "quote": "Get an inspirational quote",
+                    "stonks": {
+                        "description": "Fetch a random meme from Reddit related to stocks and finance.",
+                        "usage": "!stonks"
+                    },
+                    "wsb": {
+                        "description": "Display a random, humorous Wall Street Bets style quote.",
+                        "usage": "!wsb"
+                    },
+                    "ticker [symbol]": {
+                        "description": "Retrieve basic information about a stock ticker. If no symbol is provided, a random one is chosen.",
+                        "usage": "!ticker TSLA"
+                    },
+                    "yolo": {
+                        "description": "Simulate a YOLO options trade with randomized outcomes.",
+                        "usage": "!yolo"
+                    },
+                    "jpow": {
+                        "description": "Get a random Jerome Powell quote with a twist of money printer status.",
+                        "usage": "!jpow"
+                    }
                 }
             }
         }
-        
-        # If no category specified, show main help menu
+
+        # If no category is specified, display the main help menu with available categories
         if category is None:
             embed = discord.Embed(
                 title="📚 Bot Help Menu",
                 description="Here's a list of command categories. Use `!help <category>` to see specific commands.",
                 color=discord.Color.blue()
             )
-            
-            # Add each category as a field
-            for cat_name, cat_data in categories.items():
+            for cat_key, cat_data in categories.items():
                 embed.add_field(
                     name=f"{cat_data['emoji']} {cat_data['title']}",
-                    value=f"{cat_data['description']}\nUse `!help {cat_name}` to see commands",
+                    value=f"{cat_data['description']}\nUse `!help {cat_key}` for more info.",
                     inline=False
                 )
-                
-            embed.set_footer(text="Bot created by Your Name • Type !help <category> for more info")
-            
-        # If category is specified, show category-specific help
+            embed.set_footer(text="Bot created by Your Name • Type !help <category> for more details")
         else:
             category = category.lower()
             if category in categories:
                 cat_data = categories[category]
-                
                 embed = discord.Embed(
-                    title=f"{cat_data['emoji']} {cat_data['title']}",
+                    title=f"{cat_data['emoji']} {cat_data['title']} Commands",
                     description=cat_data['description'],
                     color=discord.Color.blue()
                 )
-                
-                # Add each command as a field
-                for cmd, desc in cat_data['commands'].items():
+                for cmd, details in cat_data["commands"].items():
                     embed.add_field(
                         name=f"!{cmd}",
-                        value=desc,
+                        value=f"{details['description']}\nUsage: `{details['usage']}`",
                         inline=False
                     )
-                    
                 embed.set_footer(text="Bot created by Your Name • Type !help for main menu")
-                
             else:
-                # Category not found
                 return await ctx.send(f"Category '{category}' not found. Use `!help` to see available categories.")
         
         await ctx.send(embed=embed)
-        
+   
     def load_data(self):
         # Load polls
         try:
@@ -914,17 +975,22 @@ async def on_ready():
         await setup_bot()
         await bot.tree.sync()
     except Exception as e:
-        logger.error("Error in setup: %s", e)
+        logger.error("Error during setup: %s", e)
     logger.info("Logged in as %s", bot.user)
     
     # Start background tasks
     status_updater.start()
     
-    # Load polls and reminders if they exist
+    # Load polls and reminders if they exist (from UtilityCog)
     utility_cog = bot.get_cog("UtilityCog")
     if utility_cog:
         utility_cog.load_data()
         utility_cog.check_reminders.start()
+    
+    # Log all registered prefix commands for debugging
+    registered_commands = [command.name for command in bot.commands]
+    logger.info("Registered prefix commands: %s", registered_commands)
+
 
 # Regular command example: replies with "Hello!" when a user types "!hello"
 @bot.command()
