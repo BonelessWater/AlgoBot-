@@ -302,6 +302,8 @@ class ModerationCog(commands.Cog):
     @commands.command(name="clear")
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int):
+        if amount >= 10:
+            amount = 10
         try:
             deleted = await ctx.channel.purge(limit=amount)
             await ctx.send(f"Cleared {len(deleted)} messages.", delete_after=5)
